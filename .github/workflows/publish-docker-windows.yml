@@ -1,0 +1,52 @@
+name: Publish antonytm/mcp-sitecore-windows to Docker Hub
+on:
+  release:
+    types: [created]
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Ensure Docker daemon is running
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Get-Service docker | Format-Table -AutoSize
+          if ((Get-Service docker).Status -ne 'Running') {
+            Write-Host 'Starting docker service...'
+            Start-Service docker
+          }
+          # Wait for the daemon to accept API calls (named pipe becomes available).
+          $maxAttempts = 30
+          for ($i = 1; $i -le $maxAttempts; $i++) {
+            docker version *> $null
+            if ($LASTEXITCODE -eq 0) {
+              Write-Host 'Docker daemon is ready.'
+              break
+            }
+            Write-Host "Waiting for Docker daemon... ($i/$maxAttempts)"
+            Start-Sleep -Seconds 5
+          }
+          if ($LASTEXITCODE -ne 0) {
+            throw 'Docker daemon did not become ready in time.'
+          }
+      - name: Resolve image tags from package.json
+        id: version
+        shell: pwsh
+        run: |
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          # A prerelease must not move `latest`.
+          if ($version -match "-") { $tags = $version } else { $tags = "$version, latest" }
+          Write-Host "resolved tags: $tags"
+          "tags=$tags" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+      - uses: mr-smithers-excellent/docker-build-push@v6
+        name: Build & push Docker image
+        with:
+          image: antonytm/mcp-sitecore-windows
+          tags: ${{ steps.version.outputs.tags }}
+          registry: docker.io
+          dockerfile: ./docker/windows/Dockerfile
+          platform: windows/amd64
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}

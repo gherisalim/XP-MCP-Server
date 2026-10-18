@@ -1,0 +1,80 @@
+{
+  "name": "@antonytm/mcp-sitecore-server",
+  "mcpName": "io.github.Antonytm/mcp-sitecore-server",
+  "version": "2.0.3",
+  "description": "Sitecore Community MCP: read/write access to Sitecore XM Cloud and XM/XP over the Authoring and Management API, the Item Service, GraphQL Edge and Sitecore PowerShell Extensions",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Antonytm/mcp-sitecore-server.git"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "./dist/bundle.js",
+  "bin": {
+    "@antonytm/mcp-sitecore-server": "./dist/bundle.js"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "tsc && tsc-alias && node scripts/copy-docs.mjs",
+    "bundle": "rollup -c",
+    "prepare": "npm run build && npm run bundle",
+    "watch": "tsc --watch",
+    "inspector": "npx @modelcontextprotocol/inspector@latest node dist/index.js",
+    "start": "npm run start:streamable-http",
+    "start:streamable-http": "npm run build && cross-env TRANSPORT=streamable-http node dist/index.js",
+    "start:stdio": "npm run build && cross-env TRANSPORT=stdio node dist/index.js",
+    "run": "npm run build && node dist/run.js",
+    "typecheck": "tsc --noEmit",
+    "version": "node scripts/version.mjs && git add server.json",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "npm run build && npm run bundle && vitest run",
+    "test:unit": "vitest run --config vitest.unit.config.ts",
+    "docker:windows:build": "node scripts/docker.mjs windows build",
+    "docker:windows:run": "node scripts/docker.mjs windows run",
+    "docker:windows:push": "node scripts/docker.mjs windows push",
+    "docker:windows": "npm run docker:windows:build && npm run docker:windows:push",
+    "docker:linux:build": "node scripts/docker.mjs linux build",
+    "docker:linux:run": "node scripts/docker.mjs linux run",
+    "docker:linux:push": "node scripts/docker.mjs linux push",
+    "docker:linux": "npm run docker:linux:build && npm run docker:linux:push"
+  },
+  "dependencies": {
+    "@antonytm/clixml-parser": "^0.1.5",
+    "@modelcontextprotocol/node": "^2.0.0",
+    "@modelcontextprotocol/server": "^2.0.0",
+    "dotenv": "^16.6.1",
+    "express": "^5.2.1",
+    "graphql": "^16.11.0",
+    "zod": "^4.2.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@modelcontextprotocol/client": "^2.0.0",
+    "@rollup/plugin-alias": "^5.1.1",
+    "@rollup/plugin-commonjs": "^28.0.9",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.13.2",
+    "cross-env": "^7.0.3",
+    "eslint": "^10.9.1",
+    "globals": "^17.11.0",
+    "rollup": "^4.62.2",
+    "rollup-plugin-copy": "^3.5.0",
+    "tsc-alias": "^1.8.17",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.69.0",
+    "vitest": "^3.2.6"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

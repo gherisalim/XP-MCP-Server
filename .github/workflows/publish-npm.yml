@@ -1,0 +1,38 @@
+name: Publish @antonytm/mcp-sitecore-server to NPM registry
+on:
+  release:
+    types: [created]
+permissions:
+  id-token: write
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Install dependencies
+        working-directory: .
+        run: npm install
+      - name: Build package
+        working-directory: .
+        run: npm run build
+      - name: Bundle package
+        working-directory: .
+        run: npm run bundle
+      - name: Publish package on NPM 📦
+        working-directory: .
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          # `npm publish` moves the `latest` dist-tag regardless of the semver
+          # prerelease suffix, so `npx @antonytm/mcp-sitecore-server` would hand every
+          # user the beta. Route prereleases to `beta` instead.
+          case "$version" in
+            *-*) echo "prerelease $version -> dist-tag beta"; npm publish --tag beta ;;
+            *)   echo "release $version -> dist-tag latest";  npm publish ;;
+          esac
