@@ -3,6 +3,8 @@ import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import fs from "node:fs";
 import 'dotenv/config.js';
+import packageData from '../package.json' with { type: 'json' };
+
 
 // Only ever consumed by `z.infer` below: the shape is the single definition of `Config`,
 // and nothing parses against it, so the linter cannot see it as a used value.
@@ -142,16 +144,16 @@ export type EnvConfig = z.infer<typeof envSchema>;
 export type EnvStartConfig = z.infer<typeof envStartSchema>;
 
 // Read package.json data
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const packagePath = path.resolve(__dirname, '..', 'package.json');
-const packageData = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+//const __filename = fileURLToPath(import.meta.url);
+//const __dirname = path.dirname(__filename);
+//const packagePath = path.resolve(__dirname, '..', 'package.json');
+//const packageData = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
 const { version, name } = packageData;
 
 /**
  * `GRAPHQL_HEADERS` is JSON in an environment variable, so a stray comma is a realistic
  * mistake. Throwing here kills the process during module import — before any transport
- * starts, and on stdio with nothing to show the user but a dead subprocess. Report it and
+ * starts, and on stdio with nohing to show the user but a dead subprocess. Report it and
  * carry on with no extra headers, the same way a bad TOOL_PROFILE is reported.
  */
 function parseGraphQLHeaders(raw: string | undefined): Record<string, string> {
